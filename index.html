@@ -99,6 +99,7 @@ button {
 function startAR(image) {
     document.body.innerHTML = `
     <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+        <!-- Hiro Marker -->
         <a-marker preset="hiro">
             <a-image src="${image}" position="0 0 0" rotation="-90 0 0" width="1" height="1.2"></a-image>
         </a-marker>
