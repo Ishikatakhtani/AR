@@ -2,115 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cafe Camera Menu</title>
+  <title>Cafe Menu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      background: black;
       font-family: "Poppins", Arial, sans-serif;
-    }
-
-    /* CAMERA */
-    video {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: 1;
-    }
-
-    /* FOOD IMAGE */
-    .food {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 200px;
-      z-index: 2;
-      touch-action: none;
-      transform-origin: center;
-      cursor: grab;
-      filter: drop-shadow(0 20px 25px rgba(0,0,0,0.6));
-    }
-
-    /* TOP CONTROLS */
-    .controls {
-      position: fixed;
-      top: 14px;
-      right: 12px;
-      z-index: 4;
-      background: rgba(0,0,0,0.65);
-      padding: 10px;
-      border-radius: 12px;
+      background: #111;
       color: white;
-      width: 140px;
     }
 
-    .controls label {
-      font-size: 12px;
-      opacity: 0.8;
+    h1 {
+      text-align: center;
+      padding: 16px;
     }
 
-    input[type="range"] {
-      width: 100%;
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 16px;
     }
 
-    /* MENU PANEL */
-    .menu-panel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      z-index: 3;
-      background: rgba(20,20,20,0.95);
-      border-radius: 18px 18px 0 0;
-      padding: 14px;
-    }
-
-    .menu-title {
-      color: white;
-      font-size: 18px;
-      margin-bottom: 10px;
-    }
-
-    .menu-items {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-    }
-
-    .item-card {
-      min-width: 160px;
-      background: #1e1e1e;
+    .item {
+      background: #1c1c1c;
       border-radius: 14px;
-      padding: 10px;
-      color: white;
+      padding: 12px;
     }
 
-    .item-card img {
+    .item img {
       width: 100%;
-      height: 90px;
+      height: 120px;
       object-fit: contain;
-      margin-bottom: 6px;
     }
 
-    .item-name {
-      font-size: 14px;
+    .name {
       font-weight: 600;
+      margin-top: 6px;
     }
 
-    .item-price {
-      font-size: 13px;
+    .price {
       opacity: 0.8;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .view-btn {
+    button {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border-radius: 8px;
       border: none;
       font-weight: bold;
@@ -121,139 +60,42 @@
 </head>
 <body>
 
-<!-- CAMERA -->
-<video id="camera" autoplay playsinline></video>
+<h1>☕ Cafe Menu</h1>
 
-<!-- FOOD OVERLAY -->
-<img id="food" class="food" src="" style="display:none;" />
+<div class="menu">
+  <div class="item">
+    <img src="burger.png">
+    <div class="name">Cheese Burger</div>
+    <div class="price">₹149</div>
+    <button onclick="openCamera('burger.png')">
+      View on Table
+    </button>
+  </div>
 
-<!-- ROTATE / RESET -->
-<div class="controls">
-  <label>Rotate</label>
-  <input type="range" min="-180" max="180" value="0" id="rotateRange" />
-  <br><br>
-  <button onclick="resetImage()" class="view-btn">Reset</button>
-</div>
+  <div class="item">
+    <img src="pizza.png">
+    <div class="name">Veg Pizza</div>
+    <div class="price">₹249</div>
+    <button onclick="openCamera('pizza.png')">
+      View on Table
+    </button>
+  </div>
 
-<!-- MENU -->
-<div class="menu-panel">
-  <div class="menu-title">☕ Cafe Menu</div>
-
-  <div class="menu-items">
-    <div class="item-card">
-      <img src="burger.png">
-      <div class="item-name">Cheese Burger</div>
-      <div class="item-price">₹149</div>
-      <button class="view-btn" onclick="viewItem('burger.png')">
-        View on Table
-      </button>
-    </div>
-
-    <div class="item-card">
-      <img src="pizza.png">
-      <div class="item-name">Veg Pizza</div>
-      <div class="item-price">₹249</div>
-      <button class="view-btn" onclick="viewItem('pizza.png')">
-        View on Table
-      </button>
-    </div>
-
-    <div class="item-card">
-      <img src="coldcoffee.jpg">
-      <div class="item-name">Cold Coffee</div>
-      <div class="item-price">₹99</div>
-      <button class="view-btn" onclick="viewItem('coldcoffee.jpg')">
-        View on Table
-      </button>
-    </div>
+  <div class="item">
+    <img src="coldcoffee.jpg">
+    <div class="name">Cold Coffee</div>
+    <div class="price">₹99</div>
+    <button onclick="openCamera('coldcoffee.jpg')">
+      View on Table
+    </button>
   </div>
 </div>
 
 <script>
-/* CAMERA */
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "environment" }
-}).then(stream => camera.srcObject = stream);
-
-/* IMAGE STATE */
-const img = document.getElementById("food");
-const rotateRange = document.getElementById("rotateRange");
-
-let posX = window.innerWidth / 2;
-let posY = window.innerHeight / 2;
-let scale = 1;
-let rotation = 0;
-
-/* APPLY TRANSFORM */
-function updateTransform() {
-  img.style.transform =
-    `translate(-50%, -50%) translate(${posX}px, ${posY}px) scale(${scale}) rotate(${rotation}deg)`;
+function openCamera(image) {
+  // pass selected image to camera page
+  window.location.href = `camera.html?img=${image}`;
 }
-
-/* VIEW ITEM */
-function viewItem(src) {
-  img.src = src;
-  img.style.display = "block";
-  resetImage();
-}
-
-/* RESET */
-function resetImage() {
-  posX = window.innerWidth / 2;
-  posY = window.innerHeight / 2;
-  scale = 1;
-  rotation = 0;
-  rotateRange.value = 0;
-  updateTransform();
-}
-
-/* DRAG */
-let isDragging = false;
-let lastX = 0;
-let lastY = 0;
-
-img.addEventListener("pointerdown", e => {
-  isDragging = true;
-  lastX = e.clientX;
-  lastY = e.clientY;
-  img.setPointerCapture(e.pointerId);
-});
-
-img.addEventListener("pointermove", e => {
-  if (!isDragging) return;
-  posX += e.clientX - lastX;
-  posY += e.clientY - lastY;
-  lastX = e.clientX;
-  lastY = e.clientY;
-  updateTransform();
-});
-
-img.addEventListener("pointerup", () => isDragging = false);
-
-/* PINCH ZOOM */
-let lastDistance = null;
-img.addEventListener("touchmove", e => {
-  if (e.touches.length === 2) {
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (lastDistance) {
-      scale += (distance - lastDistance) * 0.002;
-      scale = Math.min(Math.max(0.5, scale), 3);
-      updateTransform();
-    }
-    lastDistance = distance;
-  }
-});
-
-img.addEventListener("touchend", () => lastDistance = null);
-
-/* ROTATE */
-rotateRange.addEventListener("input", e => {
-  rotation = e.target.value;
-  updateTransform();
-});
 </script>
 
 </body>
