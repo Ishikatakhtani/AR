@@ -2,99 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cafe AR Menu</title>
-
-  <!-- Google Model Viewer -->
-  <script type="module"
-    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
-  </script>
-
+  <title>Camera Menu View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
       margin: 0;
-      font-family: Poppins, sans-serif;
-      background: #111;
-      color: white;
-      text-align: center;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: black;
     }
 
-    h1 {
-      margin: 20px 0;
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .food {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 180px;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      touch-action: none;
+      cursor: grab;
     }
 
     .menu {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-      padding: 20px;
-    }
-
-    .item {
-      background: #1c1c1c;
-      border-radius: 14px;
-      padding: 12px;
-    }
-
-    .item img {
-      width: 100%;
-      border-radius: 10px;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      gap: 10px;
     }
 
     button {
-      margin-top: 10px;
-      padding: 10px;
-      width: 100%;
-      border: none;
+      padding: 10px 14px;
       border-radius: 8px;
-      background: #ff9800;
+      border: none;
       font-weight: bold;
-      cursor: pointer;
+      background: orange;
     }
   </style>
 </head>
 <body>
 
-<h1>🍽 Cafe AR Menu</h1>
+<video id="camera" autoplay playsinline></video>
+
+<img
+  id="food"
+  src="burger.png"
+  class="food"
+/>
 
 <div class="menu">
-  <div class="item">
-    <img src="burger.png" />
-    <button onclick="openAR('burger.png')">View Burger in AR</button>
-  </div>
-
-  <div class="item">
-    <img src="pizza.png" />
-    <button onclick="openAR('pizza.png')">View Pizza in  AR</button>
-  </div>
+  <button onclick="setFood('burger.png')">Burger 🍔</button>
+  <button onclick="setFood('pizza.png')">Pizza 🍕</button>
 </div>
 
 <script>
-function openAR(image) {
-  const isAndroid = /Android/i.test(navigator.userAgent);
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+/* CAMERA */
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: "environment" }
+}).then(stream => {
+  document.getElementById("camera").srcObject = stream;
+});
 
-  const imageURL = location.origin + "/" + image;
-
-  if (isAndroid) {
-    // ANDROID — Google Scene Viewer (Image AR)
-    const intent =
-      `intent://arvr.google.com/scene-viewer/1.0` +
-      `?file=${imageURL}` +
-      `&mode=ar_preferred` +
-      `#Intent;scheme=https;package=com.google.ar.core;end;`;
-
-    window.location.href = intent;
-
-  } else if (isIOS) {
-    // IOS — Apple Quick Look (Image AR)
-    window.location.href = imageURL;
-
-  } else {
-    alert("AR is supported on mobile devices only.");
-  }
+/* CHANGE IMAGE */
+function setFood(src) {
+  document.getElementById("food").src = src;
 }
+
+/* DRAG IMAGE */
+const img = document.getElementById("food");
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+img.addEventListener("pointerdown", e => {
+  isDragging = true;
+  offsetX = e.clientX - img.offsetLeft;
+  offsetY = e.clientY - img.offsetTop;
+  img.setPointerCapture(e.pointerId);
+});
+
+img.addEventListener("pointermove", e => {
+  if (!isDragging) return;
+  img.style.left = e.clientX - offsetX + "px";
+  img.style.top = e.clientY - offsetY + "px";
+});
+
+img.addEventListener("pointerup", () => {
+  isDragging = false;
+});
+
+/* PINCH TO ZOOM */
+let scale = 1;
+img.addEventListener("wheel", e => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(0.5, scale), 3);
+  img.style.transform = `translate(-50%, -50%) scale(${scale})`;
+});
 </script>
 
 </body>
