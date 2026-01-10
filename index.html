@@ -1,111 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Café QR Menu</title>
+  <meta charset="UTF-8" />
+  <title>Cafe AR Menu</title>
 
-<!-- A-Frame + AR.js -->
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.rawgit.com/jeromeetienne/AR.js/2.2.1/aframe/build/aframe-ar.js"></script>
+  <!-- Google Model Viewer -->
+  <script type="module"
+    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  </script>
 
-<style>
-body {
-    margin: 0;
-    font-family: Poppins, sans-serif;
-    background: #f8f5f2;
-}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-header {
-    background: #3e2723;
-    color: white;
-    text-align: center;
-    padding: 15px;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: Poppins, sans-serif;
+      background: #111;
+      color: white;
+      text-align: center;
+    }
 
-.menu {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-}
+    h1 {
+      margin: 20px 0;
+    }
 
-.item {
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    padding: 15px;
-    text-align: center;
-}
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      padding: 20px;
+    }
 
-.item img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 12px;
-}
+    .item {
+      background: #1c1c1c;
+      border-radius: 14px;
+      padding: 12px;
+    }
 
-.item h3 {
-    margin: 10px 0 5px;
-}
+    .item img {
+      width: 100%;
+      border-radius: 10px;
+    }
 
-.item p {
-    color: #666;
-    margin: 5px 0;
-}
-
-button {
-    background: #6d4c41;
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-</style>
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #ff9800;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-<h1>☕ Café Aroma</h1>
-<p>Scan • View • Enjoy</p>
-</header>
+<h1>🍽 Cafe AR Menu</h1>
 
-<section class="menu">
+<div class="menu">
+  <div class="item">
+    <img src="burger.png" />
+    <button onclick="openAR('burger.png')">View Burger in AR</button>
+  </div>
 
-<div class="item">
-    <img src="coldcoffee.jpg" alt="Cold Coffee">
-    <h3>Cold Coffee</h3>
-    <p>₹180</p>
-    <button onclick="startAR('coldcoffee.jpg')">View in AR</button>
+  <div class="item">
+    <img src="pizza.png" />
+    <button onclick="openAR('pizza.png')">View Pizza in AR</button>
+  </div>
 </div>
-
-<div class="item">
-    <img src="cappuccino.jpg" alt="Cappuccino">
-    <h3>Cappuccino</h3>
-    <p>₹150</p>
-    <button onclick="startAR('cappuccino.jpg')">View in AR</button>
-</div>
-
-<div class="item">
-    <img src="espresso.jpg" alt="Espresso">
-    <h3>Espresso</h3>
-    <p>₹220</p>
-    <button onclick="startAR('espresso.jpg')">View in AR</button>
-</div>
-
-</section>
 
 <script>
-function startAR(image) {
-    document.body.innerHTML = `
-    <a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
-        <!-- Hiro Marker -->
-        <a-marker preset="hiro">
-            <a-image src="${image}" position="0 0 0" rotation="-90 0 0" width="1" height="1.2"></a-image>
-        </a-marker>
-        <a-entity camera></a-entity>
-    </a-scene>
-    `;
+function openAR(image) {
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  const imageURL = location.origin + "/" + image;
+
+  if (isAndroid) {
+    // ANDROID — Google Scene Viewer (Image AR)
+    const intent =
+      `intent://arvr.google.com/scene-viewer/1.0` +
+      `?file=${imageURL}` +
+      `&mode=ar_preferred` +
+      `#Intent;scheme=https;package=com.google.ar.core;end;`;
+
+    window.location.href = intent;
+
+  } else if (isIOS) {
+    // IOS — Apple Quick Look (Image AR)
+    window.location.href = imageURL;
+
+  } else {
+    alert("AR is supported on mobile devices only.");
+  }
 }
 </script>
 
