@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Camera Menu View</title>
+  <title>Cafe Camera Menu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -10,9 +10,10 @@
       margin: 0;
       overflow: hidden;
       background: black;
-      font-family: Arial, sans-serif;
+      font-family: "Poppins", Arial, sans-serif;
     }
 
+    /* CAMERA */
     video {
       position: fixed;
       inset: 0;
@@ -22,6 +23,7 @@
       z-index: 1;
     }
 
+    /* FOOD IMAGE */
     .food {
       position: fixed;
       top: 50%;
@@ -31,72 +33,152 @@
       touch-action: none;
       transform-origin: center;
       cursor: grab;
+      filter: drop-shadow(0 20px 25px rgba(0,0,0,0.6));
     }
 
-    .menu {
+    /* TOP CONTROLS */
+    .controls {
       position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 3;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
+      top: 14px;
+      right: 12px;
+      z-index: 4;
+      background: rgba(0,0,0,0.65);
+      padding: 10px;
+      border-radius: 12px;
+      color: white;
+      width: 140px;
     }
 
-    button {
-      padding: 8px 12px;
+    .controls label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    /* MENU PANEL */
+    .menu-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 3;
+      background: rgba(20,20,20,0.95);
+      border-radius: 18px 18px 0 0;
+      padding: 14px;
+    }
+
+    .menu-title {
+      color: white;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .menu-items {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+    }
+
+    .item-card {
+      min-width: 160px;
+      background: #1e1e1e;
+      border-radius: 14px;
+      padding: 10px;
+      color: white;
+    }
+
+    .item-card img {
+      width: 100%;
+      height: 90px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+
+    .item-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .item-price {
+      font-size: 13px;
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+
+    .view-btn {
+      width: 100%;
+      padding: 8px;
       border-radius: 8px;
       border: none;
       font-weight: bold;
       background: orange;
-    }
-
-    .controls {
-      position: fixed;
-      top: 20px;
-      right: 10px;
-      z-index: 3;
-      background: rgba(0,0,0,0.6);
-      padding: 10px;
-      border-radius: 10px;
-      color: white;
-    }
-
-    input[type="range"] {
-      width: 120px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
+<!-- CAMERA -->
 <video id="camera" autoplay playsinline></video>
 
-<img id="food" src="burger.png" class="food" />
+<!-- FOOD OVERLAY -->
+<img id="food" class="food" src="" style="display:none;" />
 
+<!-- ROTATE / RESET -->
 <div class="controls">
-  <div>Rotate</div>
+  <label>Rotate</label>
   <input type="range" min="-180" max="180" value="0" id="rotateRange" />
   <br><br>
-  <button onclick="resetImage()">Reset</button>
+  <button onclick="resetImage()" class="view-btn">Reset</button>
 </div>
 
-<div class="menu">
-  <button onclick="setFood('burger.png')">Burger 🍔</button>
-  <button onclick="setFood('coldcoffee.jpg')">Coffee ☕</button>
+<!-- MENU -->
+<div class="menu-panel">
+  <div class="menu-title">☕ Cafe Menu</div>
+
+  <div class="menu-items">
+    <div class="item-card">
+      <img src="burger.png">
+      <div class="item-name">Cheese Burger</div>
+      <div class="item-price">₹149</div>
+      <button class="view-btn" onclick="viewItem('burger.png')">
+        View on Table
+      </button>
+    </div>
+
+    <div class="item-card">
+      <img src="pizza.png">
+      <div class="item-name">Veg Pizza</div>
+      <div class="item-price">₹249</div>
+      <button class="view-btn" onclick="viewItem('pizza.png')">
+        View on Table
+      </button>
+    </div>
+
+    <div class="item-card">
+      <img src="coldcoffee.jpg">
+      <div class="item-name">Cold Coffee</div>
+      <div class="item-price">₹99</div>
+      <button class="view-btn" onclick="viewItem('coldcoffee.jpg')">
+        View on Table
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
 /* CAMERA */
 navigator.mediaDevices.getUserMedia({
   video: { facingMode: "environment" }
-}).then(stream => {
-  camera.srcObject = stream;
-});
+}).then(stream => camera.srcObject = stream);
 
 /* IMAGE STATE */
 const img = document.getElementById("food");
+const rotateRange = document.getElementById("rotateRange");
+
 let posX = window.innerWidth / 2;
 let posY = window.innerHeight / 2;
 let scale = 1;
@@ -107,11 +189,12 @@ function updateTransform() {
   img.style.transform =
     `translate(-50%, -50%) translate(${posX}px, ${posY}px) scale(${scale}) rotate(${rotation}deg)`;
 }
-updateTransform();
 
-/* CHANGE IMAGE */
-function setFood(src) {
+/* VIEW ITEM */
+function viewItem(src) {
   img.src = src;
+  img.style.display = "block";
+  resetImage();
 }
 
 /* RESET */
@@ -149,7 +232,6 @@ img.addEventListener("pointerup", () => isDragging = false);
 
 /* PINCH ZOOM */
 let lastDistance = null;
-
 img.addEventListener("touchmove", e => {
   if (e.touches.length === 2) {
     const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -158,7 +240,7 @@ img.addEventListener("touchmove", e => {
 
     if (lastDistance) {
       scale += (distance - lastDistance) * 0.002;
-      scale = Math.min(Math.max(0.4, scale), 3);
+      scale = Math.min(Math.max(0.5, scale), 3);
       updateTransform();
     }
     lastDistance = distance;
@@ -167,8 +249,7 @@ img.addEventListener("touchmove", e => {
 
 img.addEventListener("touchend", () => lastDistance = null);
 
-/* ROTATION SLIDER */
-const rotateRange = document.getElementById("rotateRange");
+/* ROTATE */
 rotateRange.addEventListener("input", e => {
   rotation = e.target.value;
   updateTransform();
