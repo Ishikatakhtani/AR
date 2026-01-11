@@ -1,11 +1,30 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Brew & Bites Menu</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- 🔥 FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCsQMuQwr2QqjbcwXns2R_GZojCpJciCvM",
+    authDomain: "armenu-cafe.firebaseapp.com",
+    projectId: "armenu-cafe",
+    storageBucket: "armenu-cafe.appspot.com",
+    messagingSenderId: "640769859050",
+    appId: "1:640769859050:web:6f491f39d5534d13f62693"
+  };
+
+  window.app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+</script>
 
 <style>
 :root{
@@ -92,7 +111,7 @@ header p{
   transform:rotate(180deg);
 }
 
-/* COLLAPSE ANIMATION */
+/* COLLAPSE */
 .items{
   max-height:0;
   overflow:hidden;
@@ -100,7 +119,7 @@ header p{
 }
 
 .category.open .items{
-  max-height:1000px;
+  max-height:1500px;
 }
 
 /* ITEM */
@@ -121,10 +140,7 @@ header p{
   box-shadow:0 6px 14px rgba(0,0,0,.12);
 }
 
-/* DETAILS */
-.item-details{
-  flex:1;
-}
+.item-details{flex:1}
 
 .item-title{
   display:flex;
@@ -138,7 +154,7 @@ header p{
   font-weight:600;
 }
 
-/* VEG / NON-VEG DOT */
+/* VEG / NONVEG */
 .dot{
   width:12px;
   height:12px;
@@ -165,10 +181,9 @@ header p{
   font-size:13px;
   cursor:pointer;
 }
-
-.view-btn:active{transform:scale(.96)}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -182,52 +197,67 @@ header p{
 
 <div id="menu"></div>
 
-<script>
-const menuData = JSON.parse(localStorage.getItem("menuData")) || {};
+<!-- 🔥 FIRESTORE MENU LOGIC -->
+<script type="module">
+import { collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const menuDiv = document.getElementById("menu");
 const searchInput = document.getElementById("search");
+let menuData = {};
+
+async function loadMenu(){
+  const snapshot = await getDocs(collection(window.db, "menu"));
+  menuData = {};
+
+  snapshot.forEach(doc=>{
+    const item = doc.data();
+    if(!menuData[item.category]){
+      menuData[item.category] = [];
+    }
+    menuData[item.category].push(item);
+  });
+
+  renderMenu();
+}
 
 function renderMenu(filter=""){
   menuDiv.innerHTML="";
 
   for(const category in menuData){
-    const filteredItems = menuData[category].filter(item =>
-      item.name.toLowerCase().includes(filter)
+    const items = menuData[category].filter(i =>
+      i.name.toLowerCase().includes(filter)
     );
 
-    if(filteredItems.length === 0) continue;
+    if(!items.length) continue;
 
-    const catDiv = document.createElement("div");
-    catDiv.className="category";
+    const cat = document.createElement("div");
+    cat.className="category open";
 
-    const title = document.createElement("h2");
-    title.innerHTML = `${category} <span class="arrow">▾</span>`;
-    title.onclick = () => catDiv.classList.toggle("open");
-
-    const itemsDiv = document.createElement("div");
-    itemsDiv.className="items";
-
-    filteredItems.forEach(item=>{
-      itemsDiv.innerHTML += `
-        <div class="item">
-          <img src="${item.img}">
-          <div class="item-details">
-            <div class="item-title">
-              <div class="dot ${item.type === "veg" ? "veg" : "nonveg"}"></div>
-              <h3>${item.name}</h3>
+    cat.innerHTML = `
+      <h2>${category}<span class="arrow">▾</span></h2>
+      <div class="items">
+        ${items.map(item=>`
+          <div class="item">
+            <img src="${item.img}">
+            <div class="item-details">
+              <div class="item-title">
+                <div class="dot ${item.type}"></div>
+                <h3>${item.name}</h3>
+              </div>
+              <div class="price">₹${item.price}</div>
+              <button class="view-btn">View on Table</button>
             </div>
-            <div class="price">${item.price}</div>
-            <button class="view-btn" onclick="openCamera('${item.img}')">
-              View on Table
-            </button>
           </div>
-        </div>
-      `;
-    });
+        `).join("")}
+      </div>
+    `;
 
-    catDiv.appendChild(title);
-    catDiv.appendChild(itemsDiv);
-    menuDiv.appendChild(catDiv);
+    cat.querySelector("h2").onclick = ()=>{
+      cat.classList.toggle("open");
+    };
+
+    menuDiv.appendChild(cat);
   }
 }
 
@@ -235,11 +265,7 @@ searchInput.addEventListener("input", e=>{
   renderMenu(e.target.value.toLowerCase());
 });
 
-function openCamera(img){
-  window.location.href=`camera.html?img=${img}`;
-}
-
-renderMenu();
+loadMenu();
 </script>
 
 </body>
