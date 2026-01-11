@@ -196,7 +196,6 @@ header p{
 
 <div id="menu"></div>
 
-<!-- 🔥 FIRESTORE MENU LOGIC -->
 <script type="module">
 import { collection, getDocs } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -271,16 +270,24 @@ document.addEventListener("DOMContentLoaded", () => {
   loadMenu();
 });
 
-// 🔥 AR FUNCTION
+// 🔥 AR FUNCTION FOR BOTH ANDROID & IOS
 function openAR(imagePath){
   const fullURL = location.origin + "/" + imagePath;
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  const ua = navigator.userAgent;
 
-  if(isAndroid){
-    window.location.href =
-      `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(fullURL)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;end;`;
-  } else {
-    alert("AR View works only on Android devices");
+  if(/Android/i.test(ua)){
+    // Google Scene Viewer
+    window.location.href = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(fullURL)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;end;`;
+  }
+  else if(/iPhone|iPad|iPod/i.test(ua)){
+    // iOS Quick Look
+    const a = document.createElement("a");
+    a.rel = "ar";
+    a.href = fullURL;
+    a.click();
+  }
+  else{
+    alert("AR View works on Android & iOS devices only");
   }
 }
 
