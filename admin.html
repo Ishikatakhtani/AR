@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brew & Bites – Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fdf6f0;
+  --primary: #7b4f35;       
+  --secondary: #d1a97c;     
+  --text: #3a2e28;
+  --muted: #7f6f64;
+  --shadow: rgba(0,0,0,0.12);
+}
+
+/* BODY */
+body {margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);}
+
+/* HEADER */
+header{padding:20px;text-align:center;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;box-shadow:0 4px 15px var(--shadow);}
+header h1{margin:0;}
+
+/* FORM */
+form{max-width:500px;margin:20px auto;padding:20px;background:#fffaf4;border-radius:16px;box-shadow:0 4px 15px var(--shadow);}
+form input, form select{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc;font-size:14px;}
+form button{margin-top:10px;padding:12px;width:100%;border-radius:24px;border:none;background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;font-weight:600;font-size:16px;cursor:pointer;}
+form button:hover{transform:translateY(-2px);}
+
+/* MENU LIST */
+.menu-list{max-width:700px;margin:20px auto;}
+.menu-item{display:flex;justify-content:space-between;align-items:center;background:#fffaf4;padding:12px 16px;margin-bottom:10px;border-radius:12px;box-shadow:0 3px 10px var(--shadow);}
+.menu-item img{width:60px;height:60px;object-fit:cover;border-radius:8px;margin-right:12px;}
+.menu-item-content{flex:1;}
+.menu-item-content h3{margin:0;font-size:16px;font-weight:600;}
+.menu-item-content p{margin:4px 0;font-size:13px;color:var(--muted);}
+.menu-item-content .price{font-weight:700;color:var(--primary);}
+.menu-item button{padding:6px 10px;border:none;border-radius:8px;background:#e74c3c;color:white;cursor:pointer;font-weight:600;}
+.menu-item button:hover{opacity:0.85;}
+</style>
+</head>
+<body>
+
+<header><h1>🍽 Brew & Bites – Admin Panel</h1></header>
+
+<form id="add-item-form">
+  <h2>Add Menu Item</h2>
+  <input type="text" id="category" placeholder="Category (e.g., Indian, Beverages)" required>
+  <input type="text" id="name" placeholder="Item Name" required>
+  <input type="text" id="desc" placeholder="Description" required>
+  <input type="text" id="price" placeholder="Price (₹)" required>
+  <input type="text" id="img" placeholder="Image Filename (e.g., burger.png)" required>
+  <select id="type" required>
+    <option value="veg">Veg</option>
+    <option value="nonveg">Non-Veg</option>
+  </select>
+  <button type="submit">Add Item</button>
+</form>
+
+<div class="menu-list" id="menu-list"></div>
+
+<script>
+// ----- PASSWORD PROTECTION -----
+const ADMIN_PASSWORD = "brew123"; // Change this password
+let entered = prompt("Enter Admin Password:");
+if(entered !== ADMIN_PASSWORD){
+  alert("Incorrect password! Redirecting to menu.");
+  window.location.href = "menu.html"; // redirect to public menu
+}
+
+// ----- MENU LOGIC -----
+let menuData = JSON.parse(localStorage.getItem('menuData')) || {};
+
+function renderMenu(){
+  const list = document.getElementById('menu-list');
+  list.innerHTML = '';
+  for(const category in menuData){
+    menuData[category].forEach((item,index)=>{
+      const div=document.createElement('div');
+      div.classList.add('menu-item');
+      div.innerHTML=`
+        <img src="${item.img}">
+        <div class="menu-item-content">
+          <h3>${item.name}</h3>
+          <p>${item.desc}</p>
+          <div class="price">${item.price}</div>
+          <div style="font-size:12px;color:var(--muted)">Category: ${category}</div>
+        </div>
+        <button onclick="deleteItem('${category}',${index})">Delete</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+}
+
+document.getElementById('add-item-form').addEventListener('submit',function(e){
+  e.preventDefault();
+  const category=document.getElementById('category').value.trim();
+  const name=document.getElementById('name').value.trim();
+  const desc=document.getElementById('desc').value.trim();
+  const price=document.getElementById('price').value.trim();
+  const img=document.getElementById('img').value.trim();
+  const type=document.getElementById('type').value;
+
+  if(!menuData[category]) menuData[category]=[];
+  menuData[category].push({name,desc,price,img,type});
+  localStorage.setItem('menuData',JSON.stringify(menuData));
+  renderMenu();
+  this.reset();
+});
+
+function deleteItem(category,index){
+  if(confirm('Delete this item?')){
+    menuData[category].splice(index,1);
+    if(menuData[category].length===0) delete menuData[category];
+    localStorage.setItem('menuData',JSON.stringify(menuData));
+    renderMenu();
+  }
+}
+
+renderMenu();
+</script>
+
+</body>
+</html>
