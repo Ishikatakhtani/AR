@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,7 +153,7 @@ header p{
   font-weight:600;
 }
 
-/* VEG / NONVEG */
+/* VEG / NONVEG DOT */
 .dot{
   width:12px;
   height:12px;
@@ -170,7 +169,7 @@ header p{
   color:var(--accent);
 }
 
-/* BUTTON */
+/* VIEW BUTTON */
 .view-btn{
   margin-top:10px;
   padding:7px 16px;
@@ -202,70 +201,90 @@ header p{
 import { collection, getDocs } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const menuDiv = document.getElementById("menu");
-const searchInput = document.getElementById("search");
-let menuData = {};
+document.addEventListener("DOMContentLoaded", () => {
+  const menuDiv = document.getElementById("menu");
+  const searchInput = document.getElementById("search");
+  let menuData = {};
 
-async function loadMenu(){
-  const snapshot = await getDocs(collection(window.db, "menu"));
-  menuData = {};
+  async function loadMenu(){
+    const snapshot = await getDocs(collection(window.db, "menu"));
+    menuData = {};
 
-  snapshot.forEach(doc=>{
-    const item = doc.data();
-    if(!menuData[item.category]){
-      menuData[item.category] = [];
+    snapshot.forEach(doc=>{
+      const item = doc.data();
+      if(!menuData[item.category]){
+        menuData[item.category] = [];
+      }
+      menuData[item.category].push(item);
+    });
+
+    renderMenu();
+  }
+
+  function renderMenu(filter=""){
+    menuDiv.innerHTML="";
+
+    for(const category in menuData){
+      const items = menuData[category].filter(i =>
+        i.name.toLowerCase().includes(filter)
+      );
+
+      if(!items.length) continue;
+
+      const cat = document.createElement("div");
+      cat.className="category open";
+
+      cat.innerHTML = `
+        <h2>${category}<span class="arrow">▾</span></h2>
+        <div class="items">
+          ${items.map(item=>`
+            <div class="item">
+              <img src="${item.img}">
+              <div class="item-details">
+                <div class="item-title">
+                  <div class="dot ${item.type}"></div>
+                  <h3>${item.name}</h3>
+                </div>
+                <div class="price">₹${item.price}</div>
+                <button class="view-btn"
+                  onclick="openAR('${item.img}')">
+                  View on Table
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      cat.querySelector("h2").onclick = ()=>{
+        cat.classList.toggle("open");
+      };
+
+      menuDiv.appendChild(cat);
     }
-    menuData[item.category].push(item);
+  }
+
+  searchInput.addEventListener("input", e=>{
+    renderMenu(e.target.value.toLowerCase());
   });
 
-  renderMenu();
-}
+  loadMenu();
+});
 
-function renderMenu(filter=""){
-  menuDiv.innerHTML="";
+// 🔥 AR FUNCTION
+function openAR(imagePath){
+  const fullURL = location.origin + "/" + imagePath;
+  const isAndroid = /Android/i.test(navigator.userAgent);
 
-  for(const category in menuData){
-    const items = menuData[category].filter(i =>
-      i.name.toLowerCase().includes(filter)
-    );
-
-    if(!items.length) continue;
-
-    const cat = document.createElement("div");
-    cat.className="category open";
-
-    cat.innerHTML = `
-      <h2>${category}<span class="arrow">▾</span></h2>
-      <div class="items">
-        ${items.map(item=>`
-          <div class="item">
-            <img src="${item.img}">
-            <div class="item-details">
-              <div class="item-title">
-                <div class="dot ${item.type}"></div>
-                <h3>${item.name}</h3>
-              </div>
-              <div class="price">₹${item.price}</div>
-              <button class="view-btn">View on Table</button>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    `;
-
-    cat.querySelector("h2").onclick = ()=>{
-      cat.classList.toggle("open");
-    };
-
-    menuDiv.appendChild(cat);
+  if(isAndroid){
+    window.location.href =
+      `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(fullURL)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;end;`;
+  } else {
+    alert("AR View works only on Android devices");
   }
 }
 
-searchInput.addEventListener("input", e=>{
-  renderMenu(e.target.value.toLowerCase());
-});
-
-loadMenu();
+window.openAR = openAR;
 </script>
 
 </body>
