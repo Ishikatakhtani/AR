@@ -32,7 +32,6 @@
   --header:#1f1c1a;
   --accent:#b07a3a;
   --text:#2b2b2b;
-  --muted:#777;
 }
 
 *{box-sizing:border-box}
@@ -269,28 +268,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadMenu();
 });
+</script>
 
-// 🔥 AR FUNCTION FOR BOTH ANDROID & IOS
+<script>
+/* ✅ CAMERA OVERLAY AR (WORKING) */
 function openAR(imagePath){
-  const fullURL = location.origin + "/" + imagePath;
-  const ua = navigator.userAgent;
-
-  if(/Android/i.test(ua)){
-    // Google Scene Viewer
-    window.location.href = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(fullURL)}&mode=ar_preferred#Intent;scheme=https;package=com.google.ar.core;end;`;
-  }
-  else if(/iPhone|iPad|iPod/i.test(ua)){
-    // iOS Quick Look
-    const a = document.createElement("a");
-    a.rel = "ar";
-    a.href = fullURL;
-    a.click();
-  }
-  else{
-    alert("AR View works on Android & iOS devices only");
-  }
+  window.location.href =
+    `ar.html?img=${encodeURIComponent(imagePath)}`;
 }
-
 window.openAR = openAR;
 </script>
 
